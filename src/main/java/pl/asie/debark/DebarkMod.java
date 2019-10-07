@@ -25,10 +25,12 @@ import net.minecraft.block.BlockLog;
 import net.minecraft.block.BlockPlanks;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.inventory.SlotFurnaceFuel;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemMultiTexture;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.ModelLoader;
@@ -115,7 +117,8 @@ public final class DebarkMod {
     @Mod.EventHandler
     public void onInit(FMLInitializationEvent event) {
         for (BlockDebarkedLogEntry block : blocksMap.values()) {
-            OreDictionary.registerOre("debarkedLogWood", new ItemStack(block.getBlock(), 1, block.getVariant()));
+            ItemStack stack = block.getItemStack();
+            OreDictionary.registerOre("debarkedLogWood", stack);
         }
     }
 
@@ -124,9 +127,9 @@ public final class DebarkMod {
         if (stateKey != null) {
             BlockDebarkedLogEntry targetBlock = blocksMap.get(stateKey);
             String axisValue = null;
-            for (IProperty property : stateKey.getPropertyKeys()) {
+            for (IProperty property : state.getPropertyKeys()) {
                 if ("axis".equals(property.getName())) {
-                    axisValue = property.getName(stateKey.getValue(property));
+                    axisValue = property.getName(state.getValue(property));
                     break;
                 }
             }

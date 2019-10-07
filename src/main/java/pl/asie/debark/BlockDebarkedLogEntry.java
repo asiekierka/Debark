@@ -20,6 +20,7 @@
 package pl.asie.debark;
 
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.item.ItemStack;
 
 public class BlockDebarkedLogEntry {
     private final BlockDebarkedLog block;
@@ -40,6 +41,10 @@ public class BlockDebarkedLogEntry {
 
     public IBlockState getBlockState() {
         return block.getDefaultState().withProperty(BlockDebarkedLog.VARIANT, variant);
+    }
+
+    public ItemStack getItemStack() {
+        return new ItemStack(block, 1, variant);
     }
 
     public String getTextureKey() {
