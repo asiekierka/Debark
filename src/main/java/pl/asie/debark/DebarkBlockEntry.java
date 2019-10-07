@@ -20,8 +20,8 @@
 package pl.asie.debark;
 
 import net.minecraft.util.ResourceLocation;
-import scala.actors.threadpool.Arrays;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class DebarkBlockEntry {

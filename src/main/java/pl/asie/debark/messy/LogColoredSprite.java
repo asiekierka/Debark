@@ -63,9 +63,10 @@ public class LogColoredSprite extends TextureAtlasSprite {
 
         int offset = (baseTex.getIconWidth() + 7) / 8;
 
+        int[] baseData = baseTex.getFrameTextureData(0)[0];
         for (int iy = offset; iy < baseTex.getIconHeight() - offset; iy++) {
             for (int ix = offset; ix < baseTex.getIconWidth() - offset; ix++) {
-                int pixel = baseTex.getFrameTextureData(0)[0][iy * baseTex.getIconWidth() + ix];
+                int pixel = baseData[iy * baseTex.getIconWidth() + ix];
                 float[] lab = UCWColorspaceUtils.XYZtoLAB(UCWColorspaceUtils.sRGBtoXYZ(UCWColorspaceUtils.fromInt(pixel)));
                 if (lab[0] < minL) minL = lab[0];
                 if (lab[0] > maxL) maxL = lab[0];
@@ -81,12 +82,18 @@ public class LogColoredSprite extends TextureAtlasSprite {
         // recolor template texture
         int[][] templateData = new int[Minecraft.getMinecraft().getTextureMapBlocks().getMipmapLevels() + 1][];
         templateData[0] = new int[templateTex.getIconWidth() * templateTex.getIconHeight()];
+        int[] templateInput = templateTex.getFrameTextureData(0)[0];
         for (int i = 0; i < templateData[0].length; i++) {
-            int oldPixel = templateTex.getFrameTextureData(0)[0][i];
-            float l = UCWColorspaceUtils.sRGBtoLuma(UCWColorspaceUtils.fromInt(oldPixel));
+            int oldPixel = templateInput[i];
+            float[] scaledPixel = UCWColorspaceUtils.fromInt(oldPixel);
+            scaledPixel[0] = (scaledPixel[0] * 2) - 0.5f;
+            scaledPixel[1] = (scaledPixel[1] * 2) - 0.5f;
+            scaledPixel[2] = (scaledPixel[2] * 2) - 0.5f;
+            float l = (UCWColorspaceUtils.sRGBtoLuma(scaledPixel));
             l = ((l / 100f) * (maxL - minL)) + minL;
+            if (l < 0f) l = 0f;
+            else if (l > 100f) l = 100f;
             float[] lab = new float[] { l, (float) A, (float) B };
-
             templateData[0][i] = UCWColorspaceUtils.asInt(UCWColorspaceUtils.XYZtosRGB(UCWColorspaceUtils.LABtoXYZ(lab))) | 0xFF000000;
         }
 
