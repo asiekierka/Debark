@@ -1,0 +1,15 @@
+[
+{
+  "modid": "debark",
+  "name": "Debark",
+  "description": "why",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "https://charset.asie.pl/",
+  "authorList": ["asie"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
