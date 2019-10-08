@@ -42,11 +42,13 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLInterModComms;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.oredict.OreDictionary;
+import org.apache.logging.log4j.Logger;
 import pl.asie.debark.util.BlockStateIterator;
 
 import java.lang.reflect.Method;
@@ -60,6 +62,7 @@ import java.util.stream.Stream;
 public final class DebarkMod {
     public static final String MODID = "debark";
     public static final String VERSION = "${version}";
+    public static Logger logger;
     private static Configuration config;
 
     @SidedProxy(modId = DebarkMod.MODID, clientSide = "pl.asie.debark.DebarkProxyClient", serverSide = "pl.asie.debark.DebarkProxyCommon")
@@ -80,6 +83,7 @@ public final class DebarkMod {
     @Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent event) {
         config = new Configuration(event.getSuggestedConfigurationFile());
+        logger = event.getModLog();
 
         add("minecraft:log,variant");
         add("minecraft:log2,variant");
@@ -99,6 +103,12 @@ public final class DebarkMod {
         add("natura:overworld_logs,type");
         add("natura:overworld_logs2,type");
         add("natura:nether_logs,type");
+        add("climaticbiomesjbg:pine_log");
+        add("bewitchment:juniper_wood");
+        add("bewitchment:elder_wood");
+        add("bewitchment:yew_wood");
+        add("bewitchment:cypress_wood");
+        add("traverse:fir_log");
 
         String[] edl = config.get("modsupport", "extraDebarkedLogs", new String[0], "Format: blockId,property1,property2,etc").getStringList();
         Stream.of(edl).forEach(this::add);
@@ -111,6 +121,20 @@ public final class DebarkMod {
 
         if (config.hasChanged()) {
             config.save();
+        }
+    }
+
+    @Mod.EventHandler
+    public void onInterModComms(FMLInterModComms.IMCEvent event) {
+        for (FMLInterModComms.IMCMessage message : event.getMessages()) {
+            if ("register_log".equals(message.key) && message.isStringMessage()) {
+                if (!blocksMap.isEmpty()) {
+                    logger.warn("Warning: IMC message " + message.key + "(" + message.getStringValue() + ") from " + message.getSender() + " was sent too late!");
+                }
+                add(message.getStringValue());
+            } else {
+                logger.warn("Unknown IMC message: " + message.key + " from " + message.getSender());
+            }
         }
     }
 
@@ -185,6 +209,7 @@ public final class DebarkMod {
             IBlockState defaultState = block.getDefaultState();
             List<IBlockState> states = BlockStateIterator.permuteByNames(defaultState, entry.getProperties()).collect(Collectors.toList());
             if (states.size() > 4) {
+                logger.warn("Could not properly handle " + entry.getBlock() + " - too many states!");
                 // TODO: don't know what to do with this...
                 continue;
             }
@@ -208,6 +233,11 @@ public final class DebarkMod {
             }
 
             ItemBlock itemBlock = new ItemBlock(blockEntry.getBlock()) {
+                @Override
+                public int getMetadata(int damage) {
+                    return damage >= 0 && damage < ((BlockDebarkedLog) block).getVariantCount() ? damage : 0;
+                }
+
                 @Override
                 public String getItemStackDisplayName(ItemStack stack) {
                     return ((BlockDebarkedLog) block).getLocalizedName(stack.getMetadata());

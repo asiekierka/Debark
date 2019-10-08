@@ -35,9 +35,12 @@ import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import pl.asie.debark.messy.DebarkTopSprite;
 import pl.asie.debark.messy.LogColoredSprite;
+import pl.asie.debark.messy.StrippedBarkColoredSprite;
 import pl.asie.debark.util.ModelDataLookup;
 import pl.asie.debark.util.ModelLoaderEarlyView;
+import pl.asie.debark.util.ResourceUtils;
 
 public class DebarkProxyClient extends DebarkProxyCommon {
     @Override
@@ -103,6 +106,10 @@ public class DebarkProxyClient extends DebarkProxyCommon {
         ResourceLocation templateSide = new ResourceLocation("debark", "blocks/debark_side");
         ResourceLocation templateTop = new ResourceLocation("debark", "blocks/debark_top");
 
+        if (!ResourceUtils.textureExists(templateTop)) {
+            event.getMap().setTextureEntry(new DebarkTopSprite("debark:blocks/debark_top", new ResourceLocation("minecraft", "blocks/log_oak_top")));
+        }
+
         DebarkMod.blocksMap.forEach((state, debarkedBlock) -> {
             IModel model = modelLoaderEarlyView.getModel(state);
             if (model == null) {
@@ -111,12 +118,21 @@ public class DebarkProxyClient extends DebarkProxyCommon {
             }
 
             ResourceLocation logTopLocation = ModelDataLookup.getLocation(state, EnumFacing.UP, model);
+            ResourceLocation logSideLocation = ModelDataLookup.getLocation(state, EnumFacing.NORTH, model);
 
             ResourceLocation blockSide = new ResourceLocation("debark", "blocks/debark_side_" + debarkedBlock.getTextureKey());
             ResourceLocation blockTop = new ResourceLocation("debark", "blocks/debark_top_" + debarkedBlock.getTextureKey());
 
-            event.getMap().setTextureEntry(new LogColoredSprite(blockSide.toString(), logTopLocation, templateSide));
-            event.getMap().setTextureEntry(new LogColoredSprite(blockTop.toString(), logTopLocation, templateTop));
+            if (!ResourceUtils.textureExists(blockSide)) {
+                if (ResourceUtils.textureExists(templateSide)) {
+                    event.getMap().setTextureEntry(new LogColoredSprite(blockSide.toString(), logTopLocation, templateSide));
+                } else {
+                    event.getMap().setTextureEntry(new StrippedBarkColoredSprite(blockSide.toString(), logTopLocation, logSideLocation));
+                }
+            }
+            if (!ResourceUtils.textureExists(blockTop)) {
+                event.getMap().setTextureEntry(new LogColoredSprite(blockTop.toString(), logTopLocation, templateTop));
+            }
         });
     }
 }
