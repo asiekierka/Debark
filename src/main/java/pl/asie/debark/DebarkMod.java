@@ -38,6 +38,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.common.SidedProxy;
@@ -85,8 +86,12 @@ public final class DebarkMod {
         config = new Configuration(event.getSuggestedConfigurationFile());
         logger = event.getModLog();
 
-        add("minecraft:log,variant");
-        add("minecraft:log2,variant");
+        if (Loader.isModLoaded("debarkedlogs")) {
+            logger.info("Beeto's Debarked Logs detected - disabling vanilla debarked logs!");
+        } else {
+            add("minecraft:log,variant");
+            add("minecraft:log2,variant");
+        }
         for (int i = 0; i <= 6; i++) {
             add("forestry:logs." + i + ",variant");
             add("forestry:logs.fireproof." + i + ",variant");
@@ -99,16 +104,31 @@ public final class DebarkMod {
             add("biomesoplenty:log_" + i + ",variant");
         }
         add("aether_legacy:aether_log,aether_logs");
-        add("rustic:log,variant");
-        add("natura:overworld_logs,type");
-        add("natura:overworld_logs2,type");
-        add("natura:nether_logs,type");
-        add("climaticbiomesjbg:pine_log");
+        add("atum:palm_log");
         add("bewitchment:juniper_wood");
         add("bewitchment:elder_wood");
         add("bewitchment:yew_wood");
         add("bewitchment:cypress_wood");
+        add("climaticbiomesjbg:pine_log");
+        add("natura:overworld_logs,type");
+        add("natura:overworld_logs2,type");
+        add("natura:nether_logs,type");
+        add("pvj:log_aspen");
+        add("pvj:log_baobab");
+        add("pvj:log_cherry_blossom");
+        add("pvj:log_cottonwood");
+        add("pvj:log_fir");
+        add("pvj:log_jacaranda");
+        add("pvj:log_juniper");
+        add("pvj:log_mangrove");
+        add("pvj:log_maple");
+        add("pvj:log_palm");
+        add("pvj:log_pine");
+        add("pvj:log_redwood");
+        add("pvj:log_willow");
+        add("rustic:log,variant");
         add("traverse:fir_log");
+        add("twilightforest:twilight_log,variant");
 
         String[] edl = config.get("modsupport", "extraDebarkedLogs", new String[0], "Format: blockId,property1,property2,etc").getStringList();
         Stream.of(edl).forEach(this::add);

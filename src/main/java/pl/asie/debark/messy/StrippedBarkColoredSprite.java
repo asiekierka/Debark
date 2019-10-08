@@ -107,8 +107,10 @@ public class StrippedBarkColoredSprite extends TextureAtlasSprite {
                 // adapt luma
                 // the range is from ~92 to ~98 on the leftmost side, turning into the log top range on the 1/4th
                 // we also want to make the middle color less sensitive
-                float offset = 2f - (Math.abs((ix / ((float) baseTex.getIconWidth() - 1)) - 0.5f) * 4);
-                if (offset > 1f) offset = 1f;
+                float offset = (Math.abs(7.5f - ix) - 2.5f);
+                if (offset < 0f) offset = 0f;
+                offset = 1f - (offset / 5f);
+                offset = (float) Math.pow(offset, 0.65);
                 float minL = gcrLeft[0] * (1 - offset) + (gcrMiddle[0] * 0.75f + gcrMiddle[1] * 0.25f) * offset;
                 float maxL = gcrLeft[1] * (1 - offset) + (gcrMiddle[1] * 0.75f + gcrMiddle[0] * 0.25f) * offset;
                 float lum = (float) Math.pow(lab[0] / 100f, 2.2) * 100f;

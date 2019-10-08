@@ -1,0 +1,3 @@
+* Tweaks to texture generation algorithm.
+* Automatically disable vanilla debarked logs when Beeto's Debarked Logs is detected.
+* Add support for Atum, Project: Vibrant Journeys and Twilight Forest.
