@@ -91,6 +91,11 @@ public class BlockDebarkedLog extends BlockLog {
     }
 
     @Override
+    public int damageDropped(IBlockState state) {
+        return state.getValue(VARIANT);
+    }
+
+    @Override
     public int getMetaFromState(IBlockState state) {
         return state.getValue(BlockLog.LOG_AXIS).ordinal() | (state.getValue(VARIANT) << 2);
     }
