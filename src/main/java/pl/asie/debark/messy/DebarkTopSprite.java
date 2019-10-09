@@ -79,15 +79,12 @@ public class DebarkTopSprite extends TextureAtlasSprite {
         float minL = Float.MAX_VALUE;
         float maxL = Float.MIN_VALUE;
 
-        for (int iy = 0; iy < baseImage.getHeight(); iy++) {
-            for (int ix = 0; ix < baseImage.getWidth(); ix++) {
-                boolean isBorder = ix == 0 || iy == 0 || ix == (baseImage.getWidth() - 1) || iy == (baseImage.getHeight() - 1);
-                if (!isBorder) {
-                    int pixel = baseImage.getRGB(ix, iy);
-                    float lum = UCWColorspaceUtils.sRGBtoLuma(UCWColorspaceUtils.fromInt(pixel));
-                    if (lum < minL) minL = lum;
-                    if (lum > maxL) maxL = lum;
-                }
+        for (int iy = 1; iy < baseImage.getHeight() - 1; iy++) {
+            for (int ix = 1; ix < baseImage.getWidth() - 1; ix++) {
+                int pixel = baseImage.getRGB(ix, iy);
+                float lum = UCWColorspaceUtils.sRGBtoLuma(UCWColorspaceUtils.fromInt(pixel));
+                if (lum < minL) minL = lum;
+                if (lum > maxL) maxL = lum;
             }
         }
 

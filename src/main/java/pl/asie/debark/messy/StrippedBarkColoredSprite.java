@@ -26,6 +26,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 import pl.asie.debark.old.UCWColorspaceUtils;
+import pl.asie.debark.util.SpriteUtils;
 
 import java.util.Collection;
 import java.util.Random;
@@ -60,7 +61,7 @@ public class StrippedBarkColoredSprite extends TextureAtlasSprite {
         int count = 0;
 
         int offset = offset16 * baseTex.getIconWidth() / 16;
-        int[] baseData = baseTex.getFrameTextureData(0)[0];
+        int[] baseData = SpriteUtils.getFrameDataOrThrow(baseTex);
 
         for (int iy = offset; iy < baseTex.getIconHeight() - offset; iy++) {
             for (int ix = offset; ix < baseTex.getIconWidth() - offset; ix++) {
@@ -98,28 +99,32 @@ public class StrippedBarkColoredSprite extends TextureAtlasSprite {
         // recolor template texture
         int[][] templateData = new int[Minecraft.getMinecraft().getTextureMapBlocks().getMipmapLevels() + 1][];
         templateData[0] = new int[baseTex.getIconWidth() * baseTex.getIconHeight()];
-        int[] templateInput = baseTex.getFrameTextureData(0)[0];
-        int ip = 0;
-        for (int iy = 0; iy < baseTex.getIconHeight(); iy++) {
-            for (int ix = 0; ix < baseTex.getIconWidth(); ix++, ip++) {
+        int[] templateInput = SpriteUtils.getFrameDataOrThrow(baseTex);
+        for (int ix = 0; ix < baseTex.getIconWidth(); ix++) {
+            // adapt luma
+            // the range is from ~92 to ~98 on the leftmost side, turning into the log top range on the 1/4th
+            // we also want to make the middle color less sensitive
+            float offset = (Math.abs(7.5f - ix) - 2.5f);
+            if (offset < 0f) offset = 0f;
+            offset = 1f - (offset / 5f);
+            offset = (float) Math.pow(offset, 0.65);
+            float minL = gcrLeft[0] * (1 - offset) + (gcrMiddle[0] * 0.75f + gcrMiddle[1] * 0.25f) * offset;
+            float maxL = gcrLeft[1] * (1 - offset) + (gcrMiddle[1] * 0.75f + gcrMiddle[0] * 0.25f) * offset;
+
+            minL /= 100f;
+            maxL /= 100f;
+
+            for (int iy = 0; iy < baseTex.getIconHeight(); iy++) {
+                int ip = iy * baseTex.getIconWidth() + ix;
                 int pixel = templateInput[ip];
                 float[] lab = UCWColorspaceUtils.XYZtoLAB(UCWColorspaceUtils.sRGBtoXYZ(UCWColorspaceUtils.fromInt(pixel)));
-                // adapt luma
-                // the range is from ~92 to ~98 on the leftmost side, turning into the log top range on the 1/4th
-                // we also want to make the middle color less sensitive
-                float offset = (Math.abs(7.5f - ix) - 2.5f);
-                if (offset < 0f) offset = 0f;
-                offset = 1f - (offset / 5f);
-                offset = (float) Math.pow(offset, 0.65);
-                float minL = gcrLeft[0] * (1 - offset) + (gcrMiddle[0] * 0.75f + gcrMiddle[1] * 0.25f) * offset;
-                float maxL = gcrLeft[1] * (1 - offset) + (gcrMiddle[1] * 0.75f + gcrMiddle[0] * 0.25f) * offset;
                 float lum = (float) Math.pow(lab[0] / 100f, 2.2) * 100f;
                 // luma is in the gcrSide range
                 lum = ((lum - gcrSide[0]) / (gcrSide[1] - gcrSide[0]));
                 // luma is in the 0..1 range
                 lum = (lum * (maxL - minL)) + minL;
-                // luma is in the minL..maxL range
-                lum = (float) Math.pow(lum / 100f, 1 / 2.2) * 100f;
+                // luma is in the minL..maxL range (still 0..1)
+                lum = (float) Math.pow(lum, 1 / 2.2) * 100f;
                 // luma is now proper, i think?
                 lab[0] = lum;
                 lab[1] = gcrMiddle[2];

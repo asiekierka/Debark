@@ -1,0 +1,2 @@
+* Minor performance improvements
+* Made some types of mod crashes more debuggable

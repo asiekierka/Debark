@@ -26,6 +26,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 import pl.asie.debark.old.UCWColorspaceUtils;
+import pl.asie.debark.util.SpriteUtils;
 
 import java.util.Collection;
 import java.util.function.Function;
@@ -63,7 +64,7 @@ public class LogColoredSprite extends TextureAtlasSprite {
 
         int offset = (baseTex.getIconWidth() + 7) / 8;
 
-        int[] baseData = baseTex.getFrameTextureData(0)[0];
+        int[] baseData = SpriteUtils.getFrameDataOrThrow(baseTex);
         for (int iy = offset; iy < baseTex.getIconHeight() - offset; iy++) {
             for (int ix = offset; ix < baseTex.getIconWidth() - offset; ix++) {
                 int pixel = baseData[iy * baseTex.getIconWidth() + ix];
@@ -82,7 +83,7 @@ public class LogColoredSprite extends TextureAtlasSprite {
         // recolor template texture
         int[][] templateData = new int[Minecraft.getMinecraft().getTextureMapBlocks().getMipmapLevels() + 1][];
         templateData[0] = new int[templateTex.getIconWidth() * templateTex.getIconHeight()];
-        int[] templateInput = templateTex.getFrameTextureData(0)[0];
+        int[] templateInput = SpriteUtils.getFrameDataOrThrow(templateTex);
         for (int i = 0; i < templateData[0].length; i++) {
             int oldPixel = templateInput[i];
             float[] scaledPixel = UCWColorspaceUtils.fromInt(oldPixel);
