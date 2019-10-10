@@ -8,10 +8,17 @@ public final class SpriteUtils {
     }
 
     public static int[] getFrameDataOrThrow(TextureAtlasSprite sprite) {
-        int[][] data = sprite.getFrameTextureData(0);
-        if (data == null || data.length <= 0 || data[0] == null) {
-            throw new RuntimeException("Could not read texture data for " + sprite.getIconName() + "!");
+        try {
+            if (sprite.getFrameCount() <= 0) {
+                throw new RuntimeException("Could not read texture data for " + sprite.getIconName() + "! - invalid frame count " + sprite.getFrameCount() + "!");
+            }
+            int[][] data = sprite.getFrameTextureData(0);
+            if (data == null || data.length <= 0 || data[0] == null) {
+                throw new RuntimeException("Could not read texture data for " + sprite.getIconName() + " - frame 0 array missing!");
+            }
+            return data[0];
+        } catch (Exception e) {
+            throw new RuntimeException("Could not read texture data for " + sprite.getIconName() + "!", e);
         }
-        return data[0];
     }
 }
