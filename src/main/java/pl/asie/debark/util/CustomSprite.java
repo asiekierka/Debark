@@ -20,23 +20,23 @@
 package pl.asie.debark.util;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.IResource;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 
-import java.io.IOException;
-
-public final class ResourceUtils {
-    private ResourceUtils() {
-
+public abstract class CustomSprite extends TextureAtlasSprite {
+    protected CustomSprite(String spriteName) {
+        super(spriteName);
     }
 
-    public static boolean textureExists(ResourceLocation loc) {
-        IResourceManager resourceManager = Minecraft.getMinecraft().getResourceManager();
-        try (IResource resource = resourceManager.getResource(new ResourceLocation(loc.getNamespace(), "textures/" + loc.getPath() + ".png"))) {
-            return true;
-        } catch (IOException e) {
-            return false;
-        }
+    @Override
+    public boolean hasCustomLoader(IResourceManager manager, ResourceLocation location) {
+        return true;
+    }
+
+    protected void addFrameTextureData(int[] data) {
+        int[][] templateData = new int[Minecraft.getMinecraft().getTextureMapBlocks().getMipmapLevels() + 1][];
+        templateData[0] = data;
+        framesTextureData.add(templateData);
     }
 }

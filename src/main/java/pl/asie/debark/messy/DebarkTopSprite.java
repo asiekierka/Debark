@@ -28,6 +28,7 @@ import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 import pl.asie.debark.old.UCWColorspaceUtils;
+import pl.asie.debark.util.CustomSprite;
 
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
@@ -36,7 +37,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
 
-public class DebarkTopSprite extends TextureAtlasSprite {
+public class DebarkTopSprite extends CustomSprite {
     private final ResourceLocation base;
 
     public DebarkTopSprite(String spriteName, ResourceLocation base) {
@@ -70,11 +71,10 @@ public class DebarkTopSprite extends TextureAtlasSprite {
         }
 
         if (baseImage == null) {
-            throw new RuntimeException("Could not load " + this.base);
+            throw new RuntimeException("Could not load " + this.base + "!");
         }
 
-        int[][] templateData = new int[Minecraft.getMinecraft().getTextureMapBlocks().getMipmapLevels() + 1][];
-        templateData[0] = new int[baseImage.getWidth() * baseImage.getHeight()];
+        int[] templateData = new int[baseImage.getWidth() * baseImage.getHeight()];
 
         float minL = Float.MAX_VALUE;
         float maxL = Float.MIN_VALUE;
@@ -98,7 +98,7 @@ public class DebarkTopSprite extends TextureAtlasSprite {
                 boolean isBorder = ix == 0 || iy == 0 || ix == (baseImage.getWidth() - 1) || iy == (baseImage.getHeight() - 1);
                 if (isBorder) {
                     int luma = 96 + predictableRandom.nextInt(7);
-                    templateData[0][ip] = (luma * 0x10101) | 0xFF000000;
+                    templateData[ip] = (luma * 0x10101) | 0xFF000000;
                 } else {
                     // grayscale and rescale
                     int pixel = baseImage.getRGB(ix, iy);
@@ -109,14 +109,14 @@ public class DebarkTopSprite extends TextureAtlasSprite {
                     // luma is in range 0..100
                     lum = (lum / 2f) + 50f;
                     lum = (float) Math.pow(lum / 100f, 1 / 2.2) * 100f;
-                    templateData[0][ip] = UCWColorspaceUtils.asInt(UCWColorspaceUtils.XYZtosRGB(UCWColorspaceUtils.LABtoXYZ(new float[] { lum, 0, 0 }))) | 0xFF000000;
+                    templateData[ip] = UCWColorspaceUtils.asInt(UCWColorspaceUtils.XYZtosRGB(UCWColorspaceUtils.LABtoXYZ(new float[] { lum, 0, 0 }))) | 0xFF000000;
                 }
             }
         }
 
         setIconWidth(baseImage.getWidth());
         setIconHeight(baseImage.getHeight());
-        setFramesTextureData(ImmutableList.of(templateData));
+        addFrameTextureData(templateData);
 
         return false;
     }

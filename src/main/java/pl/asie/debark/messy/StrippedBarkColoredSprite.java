@@ -26,13 +26,14 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 import pl.asie.debark.old.UCWColorspaceUtils;
+import pl.asie.debark.util.CustomSprite;
 import pl.asie.debark.util.SpriteUtils;
 
 import java.util.Collection;
 import java.util.Random;
 import java.util.function.Function;
 
-public class StrippedBarkColoredSprite extends TextureAtlasSprite {
+public class StrippedBarkColoredSprite extends CustomSprite {
     private final ResourceLocation logTop;
     private final ResourceLocation logSide;
 
@@ -40,11 +41,6 @@ public class StrippedBarkColoredSprite extends TextureAtlasSprite {
         super(spriteName);
         this.logTop = logTop;
         this.logSide = logSide;
-    }
-
-    @Override
-    public boolean hasCustomLoader(IResourceManager manager, ResourceLocation location) {
-        return true;
     }
 
     @Override
@@ -61,7 +57,7 @@ public class StrippedBarkColoredSprite extends TextureAtlasSprite {
         int count = 0;
 
         int offset = offset16 * baseTex.getIconWidth() / 16;
-        int[] baseData = SpriteUtils.getFrameDataOrThrow(baseTex);
+        int[] baseData = SpriteUtils.getFrameDataOrWarn(baseTex);
 
         for (int iy = offset; iy < baseTex.getIconHeight() - offset; iy++) {
             for (int ix = offset; ix < baseTex.getIconWidth() - offset; ix++) {
@@ -86,8 +82,8 @@ public class StrippedBarkColoredSprite extends TextureAtlasSprite {
 
     @Override
     public boolean load(IResourceManager manager, ResourceLocation location, Function<ResourceLocation, TextureAtlasSprite> textureGetter) {
-        TextureAtlasSprite baseTex = textureGetter.apply(logSide);
-        float[] gcrMiddle = getGammaCorrectedLumaRange(textureGetter.apply(logTop), 2);
+        TextureAtlasSprite baseTex = SpriteUtils.loadSpriteOrWarn(logSide, textureGetter);
+        float[] gcrMiddle = getGammaCorrectedLumaRange(SpriteUtils.loadSpriteOrWarn(logTop, textureGetter), 2);
         float[] gcrSide = getGammaCorrectedLumaRange(baseTex, 0);
         float[] gcrLeft = new float[] { -0.28125f, -0.234375f };
 
@@ -97,9 +93,8 @@ public class StrippedBarkColoredSprite extends TextureAtlasSprite {
         if (gcrLeft[1] < 0f) gcrLeft[1] = 0f;
 
         // recolor template texture
-        int[][] templateData = new int[Minecraft.getMinecraft().getTextureMapBlocks().getMipmapLevels() + 1][];
-        templateData[0] = new int[baseTex.getIconWidth() * baseTex.getIconHeight()];
-        int[] templateInput = SpriteUtils.getFrameDataOrThrow(baseTex);
+        int[] templateData = new int[baseTex.getIconWidth() * baseTex.getIconHeight()];
+        int[] templateInput = SpriteUtils.getFrameDataOrWarn(baseTex);
         for (int ix = 0; ix < baseTex.getIconWidth(); ix++) {
             // adapt luma
             // the range is from ~92 to ~98 on the leftmost side, turning into the log top range on the 1/4th
@@ -129,13 +124,13 @@ public class StrippedBarkColoredSprite extends TextureAtlasSprite {
                 lab[0] = lum;
                 lab[1] = gcrMiddle[2];
                 lab[2] = gcrMiddle[3];
-                templateData[0][ip] = UCWColorspaceUtils.asInt(UCWColorspaceUtils.XYZtosRGB(UCWColorspaceUtils.LABtoXYZ(lab))) | 0xFF000000;
+                templateData[ip] = UCWColorspaceUtils.asInt(UCWColorspaceUtils.XYZtosRGB(UCWColorspaceUtils.LABtoXYZ(lab))) | 0xFF000000;
             }
         }
 
         setIconWidth(baseTex.getIconWidth());
         setIconHeight(baseTex.getIconHeight());
-        setFramesTextureData(ImmutableList.of(templateData));
+        addFrameTextureData(templateData);
 
         return false;
     }
