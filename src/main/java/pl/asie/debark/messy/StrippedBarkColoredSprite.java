@@ -56,11 +56,12 @@ public class StrippedBarkColoredSprite extends CustomSprite {
         double B = 0;
         int count = 0;
 
-        int offset = offset16 * baseTex.getIconWidth() / 16;
+        int offsetX = offset16 * baseTex.getIconWidth() / 16;
+        int offsetY = offset16 * baseTex.getIconHeight() / 16;
         int[] baseData = SpriteUtils.getFrameDataOrWarn(baseTex);
 
-        for (int iy = offset; iy < baseTex.getIconHeight() - offset; iy++) {
-            for (int ix = offset; ix < baseTex.getIconWidth() - offset; ix++) {
+        for (int iy = offsetY; iy < baseTex.getIconHeight() - offsetY; iy++) {
+            for (int ix = offsetX; ix < baseTex.getIconWidth() - offsetX; ix++) {
                 int pixel = baseData[iy * baseTex.getIconWidth() + ix];
                 float[] lab = UCWColorspaceUtils.XYZtoLAB(UCWColorspaceUtils.sRGBtoXYZ(UCWColorspaceUtils.fromInt(pixel)));
                 if (lab[0] < minL) minL = lab[0];
@@ -99,7 +100,7 @@ public class StrippedBarkColoredSprite extends CustomSprite {
             // adapt luma
             // the range is from ~92 to ~98 on the leftmost side, turning into the log top range on the 1/4th
             // we also want to make the middle color less sensitive
-            float offset = (Math.abs(7.5f - ix) - 2.5f);
+            float offset = Math.abs(7.5f - (ix * 15f / (float) (baseTex.getIconWidth() - 1))) - 2.5f;
             if (offset < 0f) offset = 0f;
             offset = 1f - (offset / 5f);
             offset = (float) Math.pow(offset, 0.65);

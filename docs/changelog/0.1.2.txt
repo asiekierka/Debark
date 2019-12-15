@@ -1,2 +1,7 @@
+* [#9] Add support for Rockhounding: Surface
+* Add support for TerraFirmaCraft
+* [#5] Added a config option to use shift-right-click instead of right-click for debarking.
+* [#6] Fixed a cross-mod crash
+* [#7] Fixed dynamic texture generation not working with >16x16 textures
 * Minor performance improvements
 * Made some types of mod crashes more debuggable

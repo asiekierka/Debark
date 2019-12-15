@@ -53,6 +53,7 @@ public class BlockDebarkedLog extends BlockLog {
 
     public IBlockState getParentState(int variant) {
         if (variant < 0 || variant >= parents.length) {
+            DebarkMod.logger.error("Mod requested parent block state for " + this + " with invalid variant number " + variant + "!");
             return parents[0];
         } else {
             return parents[variant];
@@ -64,6 +65,10 @@ public class BlockDebarkedLog extends BlockLog {
     }
 
     public ItemStack getParentStack(int variant) {
+        if (variant < 0 || variant >= parents.length) {
+            DebarkMod.logger.error("Mod requested parent item sstack for " + this + " with invalid variant number " + variant + "!");
+            return parents[0].getBlock().getItem(null, null, parents[0]);
+        }
         return parents[variant].getBlock().getItem(null, null, parents[variant]);
     }
 

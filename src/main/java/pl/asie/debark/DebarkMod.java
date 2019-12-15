@@ -72,7 +72,7 @@ public final class DebarkMod {
     private static final Map<String, DebarkBlockEntry> entries = new LinkedHashMap<>();
     static final Map<IBlockState, BlockDebarkedLogEntry> blocksMap = new LinkedHashMap<>();
 
-    private static boolean debarkByRecipe, debarkInWorld;
+    private static boolean debarkByRecipe, debarkInWorld, debarkInWorldRequiresShift;
 
     private void add(String key) {
         String[] keySplit = key.split(",");
@@ -126,6 +126,10 @@ public final class DebarkMod {
         add("pvj:log_pine");
         add("pvj:log_redwood");
         add("pvj:log_willow");
+        add("rockhounding_surface:bog_logs,variant");
+        add("rockhounding_surface:cold_logs,variant");
+        add("rockhounding_surface:fossil_logs,variant");
+        add("rockhounding_surface:petrified_logs,variant");
         add("rustic:log,variant");
         for (String s : new String[]{"acacia", "ash", "aspen", "birch", "blackwood", "chestnut", "douglas_fir",
                                      "hickory", "kapok", "maple", "oak", "palm", "pine", "rosewood", "sequoia",
@@ -140,6 +144,7 @@ public final class DebarkMod {
 
         debarkByRecipe = config.getBoolean("debarkByRecipe", "interactions", true, "Allow debarking in crafting tables.");
         debarkInWorld = config.getBoolean("debarkInWorld", "interactions", true, "Allow debarking by right-clicking blocks with an axe.");
+        debarkInWorldRequiresShift = config.getBoolean("debarkInWorldRequiresShift", "interactions", false, "Require shift-right-clicking for debarking in-world.");
 
         MinecraftForge.EVENT_BUS.register(this);
         proxy.preInit();
@@ -204,6 +209,10 @@ public final class DebarkMod {
 
         ItemStack stack = event.getItemStack();
         if (debarkInWorld) {
+            if (debarkInWorldRequiresShift && !event.getEntityPlayer().isSneaking()) {
+                return;
+            }
+
             if (!stack.isEmpty() && stack.getItem().getToolClasses(stack).contains("axe")) {
                 // we have an axe
                 IBlockState state = event.getWorld().getBlockState(event.getPos());
