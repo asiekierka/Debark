@@ -127,6 +127,11 @@ public final class DebarkMod {
         add("pvj:log_redwood");
         add("pvj:log_willow");
         add("rustic:log,variant");
+        for (String s : new String[]{"acacia", "ash", "aspen", "birch", "blackwood", "chestnut", "douglas_fir",
+                                     "hickory", "kapok", "maple", "oak", "palm", "pine", "rosewood", "sequoia",
+                                     "spruce", "sycamore", "white_cedar", "willow"}) {
+            add("tfc:wood/log/" + s);
+        }
         add("traverse:fir_log");
         add("twilightforest:twilight_log,variant");
 
@@ -237,6 +242,12 @@ public final class DebarkMod {
             BlockDebarkedLog debarkedBlock = new BlockDebarkedLog(states.toArray(new IBlockState[0]));
             for (int i = 0; i < states.size(); i++) {
                 blocksMap.put(states.get(i), new BlockDebarkedLogEntry(debarkedBlock, i));
+            }
+            // TFC hack: placed=false shall be debarkable like placed=true
+            if ("tfc".equals(block.getRegistryName().getNamespace())) {
+                for (int i = 0; i < states.size(); i++) {
+                    blocksMap.put(states.get(i).cycleProperty(block.getBlockState().getProperty("placed")), new BlockDebarkedLogEntry(debarkedBlock, i));
+                }
             }
             debarkedBlock.setRegistryName("debark:debarked_log_" + block.getRegistryName().toString().replaceAll("[^A-Za-z0-9]", "_"));
             event.getRegistry().register(debarkedBlock);
